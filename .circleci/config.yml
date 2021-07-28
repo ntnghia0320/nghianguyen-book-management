@@ -17,8 +17,9 @@ jobs: # a collection of steps
           username: mydockerhub-user
           password: $DOCKERHUB_PASSWORD  # context / project UI env-var reference
         environment:
+          POSTGRES_DB: book_management_test
           POSTGRES_USER: spring
-          POSTGRES_DB: spring1A#
+          POSTGRES_PASSWORD: spring1A#
     steps: # a collection of executable commands
       - checkout # check out source code to working directory
 
