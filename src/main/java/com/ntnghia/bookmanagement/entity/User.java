@@ -40,10 +40,9 @@ public class User {
     @Column
     private String lastName;
 
-    @Column
-    @NotNull
-    @NotEmpty
-    private Boolean enabled;
+    @Column(columnDefinition = "boolean default true")
+    @Builder.Default
+    private Boolean enabled = true;
 
     @Column
     private String avatar;

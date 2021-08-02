@@ -38,23 +38,22 @@ public class Book {
 
     @Temporal(TemporalType.TIMESTAMP)
     @NotNull
-    @NotEmpty
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date created_at;
+    private Date createdAt;
 
     @Temporal(TemporalType.TIMESTAMP)
     @NotNull
-    @NotEmpty
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date updated_at;
+    private Date updatedAt;
 
     @Column
     private String image;
 
-    @Column
-    private Boolean enabled;
+    @Column(columnDefinition = "boolean default false")
+    @Builder.Default
+    private boolean enabled = false;
 
     @ManyToOne(targetEntity = User.class)
     private User user;
