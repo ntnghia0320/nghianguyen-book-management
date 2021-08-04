@@ -1,21 +1,21 @@
 package com.ntnghia.bookmanagement.service;
 
-import com.ntnghia.bookmanagement.entity.User;
+import com.ntnghia.bookmanagement.payload.request.UserDto;
 
 import java.util.List;
 
 public interface UserService {
-    List<User> getAll();
+    List<UserDto> getAll();
 
-    User findById(int id);
+    UserDto findById(int id);
 
-    List<User> findByKeyword(String keyword);
+    List<UserDto> findByKeyword(String keyword);
 
-    User saveUser(User user);
+    UserDto saveUser(UserDto userDto);
 
-    User updateUser(int id, User user);
+    UserDto updateUser(int id, UserDto user);
 
-    User setRoleUser(int id, int roleId);
+    UserDto setRoleUser(int userId, int roleId);
 
     void deleteUser(int id);
 }

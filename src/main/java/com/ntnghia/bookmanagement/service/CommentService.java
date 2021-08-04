@@ -1,19 +1,17 @@
 package com.ntnghia.bookmanagement.service;
 
-import com.ntnghia.bookmanagement.entity.Comment;
+import com.ntnghia.bookmanagement.payload.request.CommentDto;
 
 import java.util.List;
 
 public interface CommentService {
-    Comment findById(int id);
+    CommentDto findById(int id);
 
-    List<Comment> findByUserId(int userId);
+    List<CommentDto> findByBookId(int bookId);
 
-    List<Comment> findByBookId(int bookId);
+    CommentDto saveComment(int userId, int bookId, CommentDto commentDto);
 
-    Comment saveComment(int userId, int bookId, Comment comment);
-
-    Comment updateComment(int id, Comment comment);
+    CommentDto updateComment(int commentId, int userId, int bookId, CommentDto commentDto);
 
     void deleteComment(int id);
 }

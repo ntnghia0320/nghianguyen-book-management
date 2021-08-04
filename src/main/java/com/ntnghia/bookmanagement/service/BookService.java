@@ -1,23 +1,23 @@
 package com.ntnghia.bookmanagement.service;
 
-import com.ntnghia.bookmanagement.entity.Book;
+import com.ntnghia.bookmanagement.payload.request.BookDto;
 
 import java.util.List;
 
 public interface BookService {
-    List<Book> getAll();
+    List<BookDto> getAll();
 
-    List<Book> getEnabledBook();
+    List<BookDto> getEnabledBook();
 
-    Book findById(int id);
+    BookDto findById(int id);
 
-    List<Book> findByUserId(int id);
+    List<BookDto> findByUserId(int id);
 
-    List<Book> findByKeyword(String keyword);
+    List<BookDto> findByKeyword(String keyword);
 
-    Book saveBook(int userId, Book book);
+    BookDto saveBook(int userId, BookDto bookDto);
 
-    Book updateBook(int id, Book book);
+    BookDto updateBook(int bookId, int userId, BookDto bookDto);
 
     void deleteBook(int id);
 }

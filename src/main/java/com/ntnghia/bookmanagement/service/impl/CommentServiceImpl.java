@@ -2,17 +2,25 @@ package com.ntnghia.bookmanagement.service.impl;
 
 import com.ntnghia.bookmanagement.entity.Comment;
 import com.ntnghia.bookmanagement.exception.NotFoundException;
+import com.ntnghia.bookmanagement.payload.request.BookDto;
+import com.ntnghia.bookmanagement.payload.request.CommentDto;
+import com.ntnghia.bookmanagement.payload.request.UserDto;
 import com.ntnghia.bookmanagement.repository.BookRepository;
 import com.ntnghia.bookmanagement.repository.CommentRepository;
 import com.ntnghia.bookmanagement.repository.UserRepository;
 import com.ntnghia.bookmanagement.service.CommentService;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CommentServiceImpl implements CommentService {
+    @Autowired
+    ModelMapper modelMapper;
+
     @Autowired
     CommentRepository commentRepository;
 
@@ -23,55 +31,52 @@ public class CommentServiceImpl implements CommentService {
     UserRepository userRepository;
 
     @Override
-    public Comment findById(int id) {
+    public CommentDto findById(int id) {
         if (isCommentIdExist(id)) {
-            return commentRepository.findById(id).get();
+            return convertCommentEntityToCommentDto(commentRepository.findById(id).get());
         }
 
         throw new NotFoundException(String.format("Comment id %d is not found", id));
     }
 
     @Override
-    public List<Comment> findByUserId(int userId) {
-        if (isUserIdExist(userId)) {
-            return commentRepository.findByUserId(userId);
-        }
-
-        throw new NotFoundException(String.format("User id %d is not found", userId));
-    }
-
-    @Override
-    public List<Comment> findByBookId(int bookId) {
+    public List<CommentDto> findByBookId(int bookId) {
         if (isBookIdExist(bookId)) {
-            return commentRepository.findByBookId(bookId);
+            return convertAllCommentEntityToCommentDto(commentRepository.findByBookId(bookId));
         }
 
         throw new NotFoundException(String.format("Book id %d is not found", bookId));
     }
 
     @Override
-    public Comment saveComment(int userId, int bookId, Comment comment) {
+    public CommentDto saveComment(int userId, int bookId, CommentDto commentDto) {
+        Comment commentEntity = convertCommentDtoToCommentEntity(commentDto);
         if (!isUserIdExist(userId)) {
             throw new NotFoundException(String.format("User id %d is not found", userId));
         } else if (!isBookIdExist(bookId)) {
             throw new NotFoundException(String.format("Book id %d is not found", bookId));
         }
 
-        comment.setUser(userRepository.findById(userId).get());
-        comment.setBook(bookRepository.findById(bookId).get());
+        commentEntity.setUser(userRepository.findById(userId).get());
+        commentEntity.setBook(bookRepository.findById(bookId).get());
 
-        return commentRepository.save(comment);
+        commentEntity = commentRepository.save(commentEntity);
+
+        return convertCommentEntityToCommentDto(commentEntity);
     }
 
     @Override
-    public Comment updateComment(int id, Comment comment) {
-        if (isCommentIdExist(id)) {
-            comment.setId(id);
+    public CommentDto updateComment(int commentId, int userId, int bookId, CommentDto commentDto) {
+        Comment commentEntity = convertCommentDtoToCommentEntity(commentDto);
+        if (isCommentIdExist(commentId)) {
+            commentEntity.setId(commentId);
+            commentEntity.setUser(userRepository.findById(userId).get());
+            commentEntity.setBook(bookRepository.findById(bookId).get());
 
-            return commentRepository.save(comment);
+            return convertCommentEntityToCommentDto(commentRepository.save(commentEntity));
         }
 
-        throw new NotFoundException(String.format("Comment id %d is not found", id));
+        throw new NotFoundException(String.format("Comment id %d is not found", commentId));
     }
 
     @Override
@@ -92,5 +97,24 @@ public class CommentServiceImpl implements CommentService {
 
     private boolean isBookIdExist(int id) {
         return bookRepository.existsById(id);
+    }
+
+    private CommentDto convertCommentEntityToCommentDto(Comment commentEntity) {
+        UserDto userDto = modelMapper.map(commentEntity.getUser(), UserDto.class);
+        BookDto bookDto = modelMapper.map(commentEntity.getBook(), BookDto.class);
+
+        CommentDto commentDto = modelMapper.map(commentEntity, CommentDto.class);
+        bookDto.setUser(userDto);
+        commentDto.setBook(bookDto);
+
+        return commentDto;
+    }
+
+    private Comment convertCommentDtoToCommentEntity(CommentDto commentDto) {
+        return modelMapper.map(commentDto, Comment.class);
+    }
+
+    private List<CommentDto> convertAllCommentEntityToCommentDto(List<Comment> comments) {
+        return comments.stream().map(comment -> modelMapper.map(comment, CommentDto.class)).collect(Collectors.toList());
     }
 }
