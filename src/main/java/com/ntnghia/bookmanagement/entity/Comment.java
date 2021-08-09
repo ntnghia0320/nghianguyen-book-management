@@ -36,14 +36,12 @@ public class Comment {
 
     @Temporal(TemporalType.TIMESTAMP)
     @NotNull
-    @NotEmpty
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createdAt;
 
     @Temporal(TemporalType.TIMESTAMP)
     @NotNull
-    @NotEmpty
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date updatedAt;

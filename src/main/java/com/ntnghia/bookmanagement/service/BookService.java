@@ -1,19 +1,18 @@
 package com.ntnghia.bookmanagement.service;
 
 import com.ntnghia.bookmanagement.payload.request.BookDto;
-
-import java.util.List;
+import com.ntnghia.bookmanagement.payload.response.PaginationResponse;
 
 public interface BookService {
-    List<BookDto> getAll();
+    PaginationResponse getAll(String keyword, String orderBy, String order, int page, int size);
 
-    List<BookDto> getEnabledBook();
+    PaginationResponse getEnabledBook(String keyword, int page, int size);
 
     BookDto findById(int id);
 
-    List<BookDto> findByUserId(int id);
+    PaginationResponse findByUserId(String keyword, int userId, int page, int size);
 
-    List<BookDto> findByKeyword(String keyword);
+    PaginationResponse findByKeyword(String keyword, int page, int size);
 
     BookDto saveBook(int userId, BookDto bookDto);
 

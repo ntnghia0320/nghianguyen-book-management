@@ -1,5 +1,6 @@
 package com.ntnghia.bookmanagement.security.jwt;
 
+import com.ntnghia.bookmanagement.exception.BadRequestException;
 import com.ntnghia.bookmanagement.security.service.impl.UserDetailsImpl;
 import io.jsonwebtoken.*;
 import org.slf4j.Logger;
@@ -45,7 +46,7 @@ public class JwtUtils {
         } catch (MalformedJwtException e) {
             logger.error("Invalid JWT token: {}", e.getMessage());
         } catch (ExpiredJwtException e) {
-            logger.error("JWT token is expired: {}", e.getMessage());
+            throw new BadRequestException("JWT token is expired");
         } catch (UnsupportedJwtException e) {
             logger.error("JWT token is unsupported: {}", e.getMessage());
         } catch (IllegalArgumentException e) {

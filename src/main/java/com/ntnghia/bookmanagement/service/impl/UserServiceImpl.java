@@ -10,6 +10,7 @@ import com.ntnghia.bookmanagement.repository.UserRepository;
 import com.ntnghia.bookmanagement.service.UserService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -32,7 +33,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserDto> getAll() {
-        return convertAllUserEntityToUserDto(userRepository.findAll());
+        return convertAllUserEntityToUserDto(userRepository.findAll(Sort.by(Sort.Direction.ASC, "email")));
     }
 
     @Override
@@ -72,12 +73,11 @@ public class UserServiceImpl implements UserService {
         User userEntity = convertUserDtoToUserEntity(userDto);
 
         if (isIdExist(id)) {
-            if (isUserNotChange(id, userEntity)) {
-                throw new BadRequestException("User not change");
-            } else if (isEmailExist(userEntity.getEmail())) {
+            if (isEmailExist(userEntity.getEmail(), id)) {
                 throw new BadRequestException("This email address is already being used");
             } else {
                 userEntity.setId(id);
+                userEntity.setPassword(userRepository.findById(id).get().getPassword());
                 userEntity = userRepository.save(userEntity);
 
                 return convertUserEntityToUserDto(userEntity);
@@ -114,17 +114,13 @@ public class UserServiceImpl implements UserService {
         return userRepository.existsById(id);
     }
 
-    private boolean isUserNotChange(int userId, User userNew) {
-        User userOld = userRepository.findById(userId).get();
-
-        return userOld.getEmail().equals(userNew.getEmail())
-                && userOld.getFirstName().equals(userNew.getFirstName())
-                && userOld.getLastName().equals(userNew.getLastName())
-                && userOld.getPassword().equals(userNew.getPassword());
-    }
-
     private boolean isEmailExist(String email) {
         return userRepository.findByEmail(email) != null;
+    }
+
+    private boolean isEmailExist(String email, int id) {
+        User user = userRepository.findByEmail(email);
+        return user != null && user.getId() != id;
     }
 
     private UserDto convertUserEntityToUserDto(User userEntity) {

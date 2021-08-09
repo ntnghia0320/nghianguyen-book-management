@@ -1,13 +1,13 @@
 package com.ntnghia.bookmanagement.controller;
 
 import com.ntnghia.bookmanagement.payload.request.BookDto;
+import com.ntnghia.bookmanagement.payload.response.PaginationResponse;
 import com.ntnghia.bookmanagement.service.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/books")
@@ -16,13 +16,22 @@ public class BookController {
     BookService bookService;
 
     @GetMapping()
-    public List<BookDto> getAll() {
-        return bookService.getAll();
+    public PaginationResponse getAll(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "createdAt") String orderBy,
+            @RequestParam(defaultValue = "asc") String order,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return bookService.getAll(keyword, orderBy, order, page, size);
     }
 
     @GetMapping("/enabled-book")
-    public List<BookDto> getEnabledBook() {
-        return bookService.getEnabledBook();
+    public PaginationResponse getEnabledBook(@RequestParam(required = false) String keyword,
+                                             @RequestParam(value = "page", defaultValue = "0") int page,
+                                             @RequestParam(value = "size", defaultValue = "10") int size
+    ) {
+        return bookService.getEnabledBook(keyword, page, size);
     }
 
     @GetMapping("/{id}")
@@ -30,20 +39,28 @@ public class BookController {
         return bookService.findById(id);
     }
 
-    @GetMapping("/user/{id}")
-    public List<BookDto> getByUserId(@PathVariable int id) {
-        return bookService.findByUserId(id);
+    @GetMapping("/user/{userId}")
+    public PaginationResponse getByUserId(@RequestParam(required = false) String keyword,
+                                          @PathVariable(value = "userId") int userId,
+                                          @RequestParam(value = "page", defaultValue = "0") int page,
+                                          @RequestParam(value = "size", defaultValue = "10") int size
+    ) {
+        return bookService.findByUserId(keyword, userId, page, size);
     }
 
     @GetMapping(value = "/search")
-    public List<BookDto> getByKeyword(@RequestParam("keyword") String keyword) {
-        return bookService.findByKeyword(keyword);
+    public PaginationResponse getByKeyword(@RequestParam("keyword") String keyword,
+                                           @RequestParam(defaultValue = "0") int page,
+                                           @RequestParam(defaultValue = "10") int size
+    ) {
+        return bookService.findByKeyword(keyword, page, size);
     }
 
     @PostMapping("/{userId}")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public BookDto post(@PathVariable(value = "userId") int userId,
-                        @Valid @RequestBody BookDto bookDto) {
+                        @Valid @RequestBody BookDto bookDto
+    ) {
         return bookService.saveBook(userId, bookDto);
     }
 
@@ -51,7 +68,8 @@ public class BookController {
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public BookDto put(@PathVariable(value = "bookId") int bookId,
                        @PathVariable(value = "userId") int userId,
-                       @Valid @RequestBody BookDto bookDto) {
+                       @Valid @RequestBody BookDto bookDto
+    ) {
         return bookService.updateBook(bookId, userId, bookDto);
     }
 

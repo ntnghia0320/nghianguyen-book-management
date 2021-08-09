@@ -5,11 +5,16 @@ import com.ntnghia.bookmanagement.exception.BadRequestException;
 import com.ntnghia.bookmanagement.exception.NotFoundException;
 import com.ntnghia.bookmanagement.payload.request.BookDto;
 import com.ntnghia.bookmanagement.payload.request.UserDto;
+import com.ntnghia.bookmanagement.payload.response.PaginationResponse;
 import com.ntnghia.bookmanagement.repository.BookRepository;
 import com.ntnghia.bookmanagement.repository.UserRepository;
 import com.ntnghia.bookmanagement.service.BookService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,35 +32,78 @@ public class BookServiceImpl implements BookService {
     UserRepository userRepository;
 
     @Override
-    public List<BookDto> getAll() {
-        return convertAllBookEntityToBookDto(bookRepository.findAll());
+    public PaginationResponse getAll(String keyword, String orderBy, String order, int page, int size) {
+        Pageable paging;
+
+        if (order.equals("asc")) {
+            paging = PageRequest.of(page, size, Sort.by(orderBy).ascending());
+        } else if (order.equals("desc")) {
+            paging = PageRequest.of(page, size, Sort.by(orderBy).descending());
+        } else {
+            throw new BadRequestException("Type of order not found");
+        }
+
+        Page<Book> bookPage;
+
+        if (keyword == null) {
+            bookPage = bookRepository.findAll(paging);
+        } else {
+            bookPage = bookRepository
+                    .findByTitleContainsIgnoreCaseOrAuthorContainsIgnoreCase(keyword, keyword, paging);
+        }
+
+        return new PaginationResponse(bookPage.getTotalElements(),
+                convertAllBookEntityToBookDto(bookPage.getContent()));
     }
 
     @Override
-    public List<BookDto> getEnabledBook() {
-        return convertAllBookEntityToBookDto(bookRepository.findByEnabled(true));
+    public PaginationResponse getEnabledBook(String keyword, int page, int size) {
+        Pageable paging = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<Book> bookPage;
+        if (keyword == null) {
+            bookPage = bookRepository.findByEnabled(true, paging);
+        } else {
+            bookPage = bookRepository.findByEnabledAndTitleContainsIgnoreCaseOrEnabledAndAuthorContainsIgnoreCase(
+                    true, keyword, true, keyword, paging);
+        }
+
+        return new PaginationResponse(bookPage.getTotalElements(),
+                convertAllBookEntityToBookDto(bookPage.getContent()));
     }
 
     @Override
     public BookDto findById(int id) {
         if (isBookIdExist(id)) {
-            Book bookEntity = bookRepository.findById(id).get();
-            return convertBookEntityToBookDto(bookEntity);
+            return convertBookEntityToBookDto(bookRepository.findById(id).get());
         }
 
         throw new NotFoundException(String.format("Book id %d not found", id));
     }
 
     @Override
-    public List<BookDto> findByUserId(int userId) {
-        return convertAllBookEntityToBookDto(bookRepository.findByUserId(userId));
+    public PaginationResponse findByUserId(String keyword, int userId, int page, int size) {
+        Pageable paging = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<Book> bookPage;
+
+        if (keyword == null) {
+            bookPage = bookRepository.findByUserId(userId, paging);
+        } else {
+            bookPage = bookRepository.findByUserIdAndTitleContainsIgnoreCaseOrUserIdAndAuthorContainsIgnoreCase(
+                    userId, keyword, userId, keyword, paging);
+        }
+
+        return new PaginationResponse(bookPage.getTotalElements(),
+                convertAllBookEntityToBookDto(bookPage.getContent()));
     }
 
     @Override
-    public List<BookDto> findByKeyword(String keyword) {
-        return convertAllBookEntityToBookDto(
-                bookRepository.findByTitleContainsOrAuthorContains(keyword, keyword)
-        );
+    public PaginationResponse findByKeyword(String keyword, int page, int size) {
+        Pageable paging = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<Book> bookPage = bookRepository
+                .findByTitleContainsIgnoreCaseOrAuthorContainsIgnoreCase(keyword, keyword, paging);
+
+        return new PaginationResponse(bookPage.getTotalElements(),
+                convertAllBookEntityToBookDto(bookPage.getContent()));
     }
 
     @Override
@@ -71,6 +119,11 @@ public class BookServiceImpl implements BookService {
         }
 
         bookEntity.setUser(userRepository.findById(userId).get());
+
+        if (bookEntity.getUser().getRole().getName().equals("ROLE_ADMIN")) {
+            bookEntity.setEnabled(true);
+        }
+
         bookEntity = bookRepository.save(bookEntity);
 
         return convertBookEntityToBookDto(bookEntity);
@@ -84,11 +137,7 @@ public class BookServiceImpl implements BookService {
             throw new NotFoundException(String.format("Book id %d not found", bookId));
         }
 
-        if (bookEntity.equals(bookRepository.findById(bookId).get())) {
-            throw new BadRequestException("This book is not change");
-        }
-
-        if (isBookExist(bookEntity)) {
+        if (isBookExist(bookEntity, bookId)) {
             throw new BadRequestException("This book is already exists");
         }
 
@@ -120,6 +169,16 @@ public class BookServiceImpl implements BookService {
     private boolean isBookExist(Book book) {
         return !bookRepository.findByTitle(book.getTitle()).isEmpty()
                 && !bookRepository.findByAuthor(book.getAuthor()).isEmpty();
+    }
+
+    private boolean isBookExist(Book book, int userId) {
+        List<Book> bookListGetByTitle = bookRepository.findByTitle(book.getTitle());
+        List<Book> bookListGetByAuthor = bookRepository.findByAuthor(book.getAuthor());
+        if (!bookListGetByTitle.isEmpty() && !bookListGetByAuthor.isEmpty()) {
+            return bookListGetByTitle.get(0).getId() != userId;
+        }
+
+        return false;
     }
 
     private BookDto convertBookEntityToBookDto(Book bookEntity) {
