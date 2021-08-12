@@ -26,7 +26,7 @@ public class BookController {
         return bookService.getAll(keyword, orderBy, order, page, size);
     }
 
-    @GetMapping("/enabled-book")
+    @GetMapping("/enabled")
     public PaginationResponse getEnabledBook(@RequestParam(required = false) String keyword,
                                              @RequestParam(value = "page", defaultValue = "0") int page,
                                              @RequestParam(value = "size", defaultValue = "10") int size

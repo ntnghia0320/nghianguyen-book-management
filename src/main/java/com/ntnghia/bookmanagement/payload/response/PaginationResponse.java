@@ -11,5 +11,5 @@ import java.util.List;
 @NoArgsConstructor
 public class PaginationResponse {
     private long totalItems;
-    private List<?> Items;
+    private List<?> items;
 }
