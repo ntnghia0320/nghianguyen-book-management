@@ -42,7 +42,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public List<CommentDto> findByBookId(int bookId) {
         if (isBookIdExist(bookId)) {
-            return convertAllCommentEntityToCommentDto(commentRepository.findByBookId(bookId));
+            return convertAllCommentEntityToCommentDto(commentRepository.findByBookIdOrderByCreatedAtDesc(bookId));
         }
 
         throw new NotFoundException(String.format("Book id %d is not found", bookId));

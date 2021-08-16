@@ -1,6 +1,5 @@
 package com.ntnghia.bookmanagement.security.jwt;
 
-import com.ntnghia.bookmanagement.exception.BadRequestException;
 import com.ntnghia.bookmanagement.security.service.impl.UserDetailsImpl;
 import io.jsonwebtoken.*;
 import org.slf4j.Logger;
@@ -42,15 +41,17 @@ public class JwtUtils {
             Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(authToken);
             return true;
         } catch (SignatureException e) {
-            throw new BadRequestException("Invalid JWT signature");
+            logger.error("Invalid JWT signature: {}", e.getMessage());
         } catch (MalformedJwtException e) {
-            throw new BadRequestException("Invalid JWT token");
+            logger.error("Invalid JWT token: {}", e.getMessage());
         } catch (ExpiredJwtException e) {
-            throw new BadRequestException("JWT token is expired");
+            logger.error("JWT token is expired: {}", e.getMessage());
         } catch (UnsupportedJwtException e) {
-            throw new BadRequestException("JWT token is unsupported");
+            logger.error("JWT token is unsupported: {}", e.getMessage());
         } catch (IllegalArgumentException e) {
-            throw new BadRequestException("JWT claims string is empty");
+            logger.error("JWT claims string is empty: {}", e.getMessage());
         }
+
+        return false;
     }
 }
