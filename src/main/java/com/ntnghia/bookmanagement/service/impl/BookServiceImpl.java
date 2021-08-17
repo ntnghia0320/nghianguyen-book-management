@@ -97,16 +97,6 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public PaginationResponse findByKeyword(String keyword, int page, int size) {
-        Pageable paging = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        Page<Book> bookPage = bookRepository
-                .findByTitleContainsIgnoreCaseOrAuthorContainsIgnoreCase(keyword, keyword, paging);
-
-        return new PaginationResponse(bookPage.getTotalElements(),
-                convertAllBookEntityToBookDto(bookPage.getContent()));
-    }
-
-    @Override
     public BookDto saveBook(int userId, BookDto bookDto) {
         Book bookEntity = convertBookDtoToBookEntity(bookDto);
 

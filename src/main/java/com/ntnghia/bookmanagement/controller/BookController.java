@@ -48,14 +48,6 @@ public class BookController {
         return bookService.findByUserId(keyword, userId, page, size);
     }
 
-    @GetMapping(value = "/search")
-    public PaginationResponse getByKeyword(@RequestParam("keyword") String keyword,
-                                           @RequestParam(defaultValue = "0") int page,
-                                           @RequestParam(defaultValue = "10") int size
-    ) {
-        return bookService.findByKeyword(keyword, page, size);
-    }
-
     @PostMapping("/{userId}")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public BookDto post(@PathVariable(value = "userId") int userId,

@@ -12,8 +12,6 @@ public interface BookService {
 
     PaginationResponse findByUserId(String keyword, int userId, int page, int size);
 
-    PaginationResponse findByKeyword(String keyword, int page, int size);
-
     BookDto saveBook(int userId, BookDto bookDto);
 
     BookDto updateBook(int bookId, int userId, BookDto bookDto);

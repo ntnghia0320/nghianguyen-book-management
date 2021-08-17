@@ -10,6 +10,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PaginationResponse {
-    private long totalItems;
+    private long totalResults;
     private List<?> items;
 }

@@ -25,7 +25,7 @@ public class UserController {
         return userService.findById(id);
     }
 
-    @GetMapping(value = "/search", params = "keyword")
+    @GetMapping(value = "/search")
     public List<UserDto> getByKeyword(@RequestParam("keyword") String keyword) {
         return userService.findByKeyword(keyword);
     }
